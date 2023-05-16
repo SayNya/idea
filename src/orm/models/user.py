@@ -1,5 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.orm.models.base import BaseIDModel
@@ -23,19 +22,3 @@ class UserModel(BaseIDModel):
 
     def __repr__(self):
         return "<UserModel model {}>".format(self.id)
-
-
-class TokenModel(BaseIDModel):
-    __tablename__ = "tokens"
-
-    token = Column(
-        UUID(as_uuid=False),
-        server_default=text("uuid_generate_v4()"),
-        unique=True,
-        nullable=False,
-        index=True,
-    )
-    expires = Column(DateTime())
-    user_id = Column(Integer, ForeignKey("users.id"))
-
-    user = relationship("UserModel", back_populates="token")

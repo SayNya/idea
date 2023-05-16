@@ -1,12 +1,20 @@
+from typing import TypeVar
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.orm.async_database import db_session
 
+ModelType = TypeVar("ModelType")
+
 
 class BaseRepository:
-    Model = None
+    Model: ModelType = None
 
     def __init__(self):
+        self.session: AsyncSession | None = None
+
+    def set_session(self):
         self.session = db_session.get()
 
     async def find_all(self):
@@ -19,9 +27,10 @@ class BaseRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def create(self, entity: Model) -> Model:
+    async def create(self, entity: ModelType) -> ModelType:
         self.session.add(entity)
-        await self.session.flush()
+        await self.session.commit()
+        await self.session.refresh(entity)
         return entity
 
     async def update(self, model_id: int, updates: dict) -> Model:

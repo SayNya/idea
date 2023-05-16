@@ -17,4 +17,5 @@ async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
 
-db_session: ContextVar[AsyncSession] = ContextVar('db_session')
+
+db_session: ContextVar[AsyncSession] = ContextVar("db_session")

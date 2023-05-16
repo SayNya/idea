@@ -11,3 +11,4 @@ class DepartmentModel(BaseIDModel):
     short_name = Column(String(255))
 
     users = relationship("UserModel", back_populates="department")
+    ideas = relationship("IdeaModel", back_populates="department")
