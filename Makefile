@@ -1,6 +1,8 @@
 debug:
 	uvicorn main:app --reload
-generate-migrations:
+generate:
 	alembic revision --autogenerate
 migrate:
 	alembic upgrade head
+downgrade:
+	alembic downgrade -1

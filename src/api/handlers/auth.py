@@ -2,20 +2,16 @@ from datetime import datetime, timedelta
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.handlers.base import BaseHandler
 from src.exceptions.exceptions.bad_request import BadRequestException
-from src.orm.async_database import db_session
 from src.orm.models import UserModel, TokenModel
-from src.orm.repositories import UserRepository
-from src.orm.repositories.token import TokenRepository
+from src.orm.repositories import UserRepository, TokenRepository
 from src.schemas.requests.user import UserCreate
 from src.schemas.responses.user import UserResponse, TokenBaseResponse
 from src.utils.auth import get_random_string, hash_password, validate_password
 
 
-class AuthorizationHandler(BaseHandler):
+class AuthorizationHandler:
     def __init__(
         self,
         user_repository: UserRepository = Depends(),
@@ -23,7 +19,6 @@ class AuthorizationHandler(BaseHandler):
     ):
         self.user_repository = user_repository
         self.token_repository = token_repository
-        super().__init__(repositories=[self.user_repository, self.token_repository])
 
     async def handle(self, form_data: OAuth2PasswordRequestForm) -> UserResponse:
         user = await self.user_repository.find_by_username(form_data.username)
@@ -43,7 +38,7 @@ class AuthorizationHandler(BaseHandler):
         )
 
 
-class RegistrationHandler(BaseHandler):
+class RegistrationHandler:
     def __init__(
         self,
         user_repository: UserRepository = Depends(),
@@ -51,7 +46,6 @@ class RegistrationHandler(BaseHandler):
     ):
         self.user_repository = user_repository
         self.token_repository = token_repository
-        super().__init__(repositories=[self.user_repository, self.token_repository])
 
     async def handle(self, user_create: UserCreate) -> UserResponse:
         db_user = await self.user_repository.find_by_username(user_create.username)

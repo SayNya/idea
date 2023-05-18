@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+import time
+
+from fastapi import FastAPI, Request, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.views import api_router
 from src.core.extensions import include_extensions
+from src.orm.async_database import db_session
 
 
 def create_app():

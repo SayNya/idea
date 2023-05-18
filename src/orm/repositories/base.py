@@ -11,45 +11,39 @@ ModelType = TypeVar("ModelType")
 class BaseRepository:
     Model: ModelType = None
 
-    def __init__(self):
-        self.session: AsyncSession | None = None
-
-    def set_session(self):
-        self.session = db_session.get()
-
     async def find_all(self):
         query = select(self.Model)
-        res = await self.session.execute(query)
+        res = await db_session.get().session.execute(query)
         return res.scalars().all()
 
     async def find(self, model_id: int):
         query = select(self.Model).filter_by(id=model_id)
-        result = await self.session.execute(query)
+        result = await db_session.get().execute(query)
         return result.scalars().first()
 
     async def create(self, entity: ModelType) -> ModelType:
-        self.session.add(entity)
-        await self.session.commit()
-        await self.session.refresh(entity)
+        db_session.get().add(entity)
+        await db_session.get().commit()
+        await db_session.get().refresh(entity)
         return entity
 
     async def update(self, model_id: int, updates: dict) -> Model:
         query = select(self.Model).filter_by(id=model_id)
-        result = await self.session.execute(query)
+        result = await db_session.get().execute(query)
         entity = result.scalars().first()
         for field, data in updates.items():
             setattr(entity, field, data)
-        await self.session.flush([entity])
+        await db_session.get().flush([entity])
         return entity
 
     async def delete(self, model_id) -> None:
         query = select(self.Model).filter_by(id=model_id)
-        result = await self.session.execute(query)
+        result = await db_session.get().execute(query)
         entity = result.scalars().first()
-        await self.session.delete(entity)
-        await self.session.flush()
+        await db_session.get().delete(entity)
+        await db_session.get().flush()
 
     async def bulk_save(self, entities: list[Model]) -> list[Model]:
-        self.session.add_all(entities)
-        await self.session.flush()
+        db_session.get().add_all(entities)
+        await db_session.get().flush()
         return entities

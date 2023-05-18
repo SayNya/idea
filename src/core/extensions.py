@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.api.middlewares.cors import include_cors_middleware
 from src.exceptions.handlers import include_exceptions_handlers
 
 
@@ -13,13 +14,7 @@ from src.exceptions.handlers import include_exceptions_handlers
 
 
 def include_extensions(app: FastAPI):
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    include_cors_middleware(app)
     include_exceptions_handlers(app)
 
     # @app.on_event("startup")

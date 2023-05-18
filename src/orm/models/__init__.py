@@ -3,8 +3,10 @@ from .department import DepartmentModel
 from .idea import IdeaModel
 from .idea_category import IdeaCategoryModel
 from .idea_history import IdeaHistoryModel
+from .idea_roles import IdeaRoleModel
 from .status import StatusModel
 from .system_role import SystemRoleModel
 from .token import TokenModel
 from .user import UserModel
+from .user_idea import UserIdeaModel
 from .user_system_role import UserSystemRoleModel

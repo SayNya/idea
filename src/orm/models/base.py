@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, MetaData
+from sqlalchemy import Column, Integer, MetaData, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 
 __meta = MetaData(
@@ -17,3 +17,5 @@ class BaseIDModel(Base):
     __table_args__ = ()
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

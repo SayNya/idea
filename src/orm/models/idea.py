@@ -17,10 +17,9 @@ class IdeaModel(BaseIDModel):
     histories = relationship(
         "IdeaHistoryModel",
         back_populates="idea",
-        order_by="desc(IdeaHistoryModel.created_at)",
     )
 
-    employees = relationship("EmployeesIdeasModel", back_populates="idea")
-    categories = relationship("CategoryModel", secondary="idea_category")
+    users = relationship("UserModel", secondary="user_idea")
+    categories = relationship("CategoryModel", secondary="category_idea")
 
     is_in_release = Column(Boolean, default=False)
