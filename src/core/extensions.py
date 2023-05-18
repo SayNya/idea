@@ -1,7 +1,6 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.middlewares.cors import include_cors_middleware
+from src.api.middlewares import include_cors_middleware
 from src.exceptions.handlers import include_exceptions_handlers
 
 

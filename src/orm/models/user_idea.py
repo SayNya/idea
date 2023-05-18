@@ -10,4 +10,3 @@ class UserIdeaModel(Base):
     idea_id = Column(Integer, ForeignKey("ideas.id"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     idea_role_id = Column(Integer, ForeignKey("idea_roles.id"), primary_key=True)
-

@@ -1,10 +1,9 @@
-"""from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, status
 
 from src.api.handlers.employee.submission import SubmitIdeaHandler
-
-from src.orm.async_database import db_session, get_session
-from src.schemas.responses.user import UserResponse
+from src.api.middlewares import session
+from src.schemas.requests.employee.submission import EmployeeSubmitIdeaRequest
+from src.schemas.responses.auth import UserAuthResponse
 from src.utils.dependecies import get_current_user
 
 router = APIRouter(prefix="/submission", tags=["employee"])
@@ -14,14 +13,11 @@ router = APIRouter(prefix="/submission", tags=["employee"])
     "",
     status_code=status.HTTP_201_CREATED,
 )
+@session()
 async def submit_idea_by_employee(
-    # submit_idea_schema: EmployeeSubmitIdeaRequest,
-    user_info: UserResponse = Depends(get_current_user),
+    submit_idea_schema: EmployeeSubmitIdeaRequest,
+    user_info: UserAuthResponse = Depends(get_current_user),
     submit_idea_handler: SubmitIdeaHandler = Depends(),
-    session: AsyncSession = Depends(get_session),
 ):
-    db_session.set(session)
-    submit_idea_handler.set_session_for_repositories()
-    await submit_idea_handler.handle({}, user_info)
+    await submit_idea_handler.handle(submit_idea_schema, user_info)
     return {}
-"""

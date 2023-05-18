@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from src.api.middlewares.session import session
+from src.api.middlewares import session
 from src.orm.models import UserModel
 from src.orm.repositories import UserRepository
 

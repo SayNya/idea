@@ -23,7 +23,7 @@ class UserModel(BaseIDModel):
     ideas = relationship("IdeaModel", secondary="user_idea")
     idea_roles = relationship("IdeaRoleModel", secondary="user_idea")
 
-    system_role = relationship("SystemRoleModel", secondary="user_system_role")
+    system_roles = relationship("SystemRoleModel", secondary="user_system_role")
 
     def __repr__(self):
         return "<UserModel model {}>".format(self.id)

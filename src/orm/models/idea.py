@@ -21,5 +21,3 @@ class IdeaModel(BaseIDModel):
 
     users = relationship("UserModel", secondary="user_idea")
     categories = relationship("CategoryModel", secondary="category_idea")
-
-    is_in_release = Column(Boolean, default=False)

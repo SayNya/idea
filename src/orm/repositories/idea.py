@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import select, and_, desc
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
@@ -7,17 +9,16 @@ from src.orm.models import (
     UserIdeaModel,
     UserModel,
     IdeaHistoryModel,
-    StatusModel,
-    IdeaRoleModel,
 )
 from src.orm.repositories.base import BaseRepository
-from src.schemas.enum.idea_role import IdeaRoleEnum
 
 
 class IdeaRepository(BaseRepository):
     Model = IdeaModel
 
-    async def find_by_user(self, user_id: int, role_ids: list[int]) -> list[IdeaModel]:
+    async def find_by_user(
+        self, user_id: int, role_ids: list[int]
+    ) -> Sequence[IdeaModel]:
         query = (
             select(IdeaModel)
             .options(

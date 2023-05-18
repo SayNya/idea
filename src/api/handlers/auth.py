@@ -7,7 +7,11 @@ from src.exceptions.exceptions.bad_request import BadRequestException
 from src.orm.models import UserModel, TokenModel
 from src.orm.repositories import UserRepository, TokenRepository
 from src.schemas.requests.user import UserCreate
-from src.schemas.responses.user import UserResponse, TokenBaseResponse
+from src.schemas.responses.auth import (
+    TokenResponse,
+    UserAuthResponse,
+    TokenUserResponse,
+)
 from src.utils.auth import get_random_string, hash_password, validate_password
 
 
@@ -20,7 +24,7 @@ class AuthorizationHandler:
         self.user_repository = user_repository
         self.token_repository = token_repository
 
-    async def handle(self, form_data: OAuth2PasswordRequestForm) -> UserResponse:
+    async def handle(self, form_data: OAuth2PasswordRequestForm) -> TokenUserResponse:
         user = await self.user_repository.find_by_username(form_data.username)
         if not user:
             raise BadRequestException(detail="Incorrect username or password")
@@ -32,10 +36,8 @@ class AuthorizationHandler:
 
         token = TokenModel(expires=datetime.now() + timedelta(weeks=2), user_id=user.id)
         token = await self.token_repository.create(token)
-        # user_dict["roles"] = [Role(**role_dict.__dict__) for role_dict in user_dict["roles"]]
-        return UserResponse(
-            id=user.id, username=user.username, token=TokenBaseResponse.from_orm(token)
-        )
+
+        return TokenUserResponse(**user.__dict__, token=TokenResponse.from_orm(token))
 
 
 class RegistrationHandler:
@@ -47,7 +49,7 @@ class RegistrationHandler:
         self.user_repository = user_repository
         self.token_repository = token_repository
 
-    async def handle(self, user_create: UserCreate) -> UserResponse:
+    async def handle(self, user_create: UserCreate) -> TokenUserResponse:
         db_user = await self.user_repository.find_by_username(user_create.username)
         if db_user:
             raise BadRequestException(detail="Username already registered")
@@ -57,10 +59,9 @@ class RegistrationHandler:
             username=user_create.username, password=f"{salt}${hashed_password}"
         )
         user = await self.user_repository.create(user)
+        user = await self.user_repository.find_by_username(user.username)
 
         token = TokenModel(expires=datetime.now() + timedelta(weeks=2), user_id=user.id)
         token = await self.token_repository.create(token)
 
-        return UserResponse(
-            id=user.id, username=user.username, token=TokenBaseResponse.from_orm(token)
-        )
+        return TokenUserResponse(**user.__dict__, token=TokenResponse.from_orm(token))

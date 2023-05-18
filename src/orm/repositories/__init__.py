@@ -7,4 +7,5 @@ from .status import StatusRepository
 from .system_role import SystemRoleRepository
 from .token import TokenRepository
 from .user import UserRepository
+from .user_idea import UserIdeaRepository
 from .user_system_role import UserSystemRoleRepository

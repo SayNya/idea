@@ -16,6 +16,7 @@ class UserRepository(BaseRepository):
             select(UserModel)
             .options(
                 selectinload(UserModel.department),
+                selectinload(UserModel.system_roles),
             )
             .filter(or_(UserModel.username == username))
         )
@@ -25,7 +26,11 @@ class UserRepository(BaseRepository):
     async def get_user_by_token(self, token: str) -> Model:
         query = (
             select(UserModel)
-            .options(selectinload(UserModel.token), selectinload(UserModel.department))
+            .options(
+                selectinload(UserModel.token),
+                selectinload(UserModel.department),
+                selectinload(UserModel.system_roles),
+            )
             .filter(
                 and_(TokenModel.token == token, TokenModel.expires > datetime.now())
             )

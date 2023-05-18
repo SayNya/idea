@@ -13,5 +13,4 @@ _async_engine = create_async_engine(
 async_session = sessionmaker(_async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
-
 db_session: ContextVar[AsyncSession] = ContextVar("db_session")
