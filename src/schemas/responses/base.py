@@ -27,7 +27,6 @@ class BaseStatusResponse(BaseResponse):
 
 
 class BaseIdeaHistoryResponse(BaseResponse):
-    id: int
     created_at: datetime
     status: BaseStatusResponse
     is_current_status: bool

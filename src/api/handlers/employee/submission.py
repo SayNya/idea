@@ -56,7 +56,7 @@ class SubmitIdeaHandler:
             ]
         ]
         gather_chain.append(
-            self.status_repository.find_by_code(IdeaStatusCodeEnum.SUBMITTED.value)
+            self.status_repository.find_by_code(IdeaStatusCodeEnum.PROPOSED.value)
         )
         result = await asyncio.gather(*gather_chain)
         if not all(result):

@@ -13,11 +13,11 @@ router = APIRouter(prefix="/submission", tags=["employee"])
     "",
     status_code=status.HTTP_201_CREATED,
 )
-@session()
+@session(commit=True)
 async def submit_idea_by_employee(
     submit_idea_schema: EmployeeSubmitIdeaRequest,
-    user_info: UserAuthResponse = Depends(get_current_user),
     submit_idea_handler: SubmitIdeaHandler = Depends(),
+    user_info: UserAuthResponse = Depends(get_current_user),
 ):
     await submit_idea_handler.handle(submit_idea_schema, user_info)
     return {}

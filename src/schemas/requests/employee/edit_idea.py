@@ -3,7 +3,7 @@ from pydantic import Field, PositiveInt, conset, constr
 from src.schemas.base import BaseRequest
 
 
-class EmployeeSubmitIdeaRequest(BaseRequest):
+class EditIdeaRequest(BaseRequest):
     title: constr(max_length=300)
     problem_description: constr(max_length=2000)
     solution_description: constr(max_length=2000)

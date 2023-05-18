@@ -9,8 +9,10 @@ from src.orm.models import (
     UserIdeaModel,
     UserModel,
     IdeaHistoryModel,
+    IdeaRoleModel,
 )
 from src.orm.repositories.base import BaseRepository
+from src.schemas.enum import IdeaRoleCodeEnum
 
 
 class IdeaRepository(BaseRepository):
@@ -19,6 +21,7 @@ class IdeaRepository(BaseRepository):
     async def find_by_user(
         self, user_id: int, role_ids: list[int]
     ) -> Sequence[IdeaModel]:
+        session = db_session.get()
         query = (
             select(IdeaModel)
             .options(
@@ -49,5 +52,31 @@ class IdeaRepository(BaseRepository):
 
         query = query.order_by(desc(IdeaModel.created_at)).distinct()
 
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().all()
+
+    async def find_for_employee(self, idea_id: int, employee_id: int):
+        session = db_session.get()
+        query = (
+            select(IdeaModel)
+            .options(
+                selectinload(IdeaModel.histories).options(
+                    selectinload(IdeaHistoryModel.status),
+                ),
+                with_loader_criteria(
+                    IdeaHistoryModel, IdeaHistoryModel.is_current_status.is_(True)
+                ),
+            )
+            .filter(
+                and_(
+                    IdeaModel.id == idea_id,
+                    UserIdeaModel.idea_id == IdeaModel.id,
+                    UserModel.id == UserIdeaModel.user_id,
+                    UserModel.id == employee_id,
+                    UserIdeaModel.idea_role_id == IdeaRoleModel.id,
+                    IdeaRoleModel.code == IdeaRoleCodeEnum.IDEA_AUTHOR.value,
+                )
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().first()

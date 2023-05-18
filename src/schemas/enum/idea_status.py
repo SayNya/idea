@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class IdeaStatusCodeEnum(str, Enum):
-    SUBMITTED = "submitted"
+    PROPOSED = "proposed"
 
     DECLINED = "declined"
     ACCEPTED = "accepted"
