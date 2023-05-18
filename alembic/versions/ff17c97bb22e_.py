@@ -67,13 +67,13 @@ def upgrade() -> None:
         ),
     )
     op.add_column(
-        "statuses",
+        "idea_statuses",
         sa.Column(
             "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=True
         ),
     )
     op.add_column(
-        "statuses",
+        "idea_statuses",
         sa.Column(
             "updated_at", sa.DateTime(), server_default=sa.text("now()"), nullable=True
         ),
@@ -139,8 +139,8 @@ def downgrade() -> None:
     op.drop_column("tokens", "created_at")
     op.drop_column("system_roles", "updated_at")
     op.drop_column("system_roles", "created_at")
-    op.drop_column("statuses", "updated_at")
-    op.drop_column("statuses", "created_at")
+    op.drop_column("idea_statuses", "updated_at")
+    op.drop_column("idea_statuses", "created_at")
     op.drop_column("ideas", "updated_at")
     op.drop_column("ideas", "created_at")
     op.drop_column("idea_roles", "updated_at")

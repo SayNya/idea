@@ -8,7 +8,7 @@ class IdeaHistoryModel(Base):
     __tablename__ = "idea_history"
 
     idea_id = Column(Integer, ForeignKey("ideas.id"), primary_key=True)
-    status_id = Column(Integer, ForeignKey("statuses.id"), primary_key=True)
+    idea_status_id = Column(Integer, ForeignKey("idea_statuses.id"), primary_key=True)
     is_current_status = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
 

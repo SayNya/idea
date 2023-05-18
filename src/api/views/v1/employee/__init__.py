@@ -5,11 +5,11 @@ from fastapi import APIRouter
 
 router = APIRouter(prefix="/employee")
 
-# /api/v1/idea/my-ideas/*
+# /api/v1/idea/employee/my-ideas/*
 router.include_router(my_ideas_router)
 
-# /api/v1/idea/submission/*
+# /api/v1/idea/employee/submission/*
 router.include_router(submission_router)
 
-# /api/v1/idea/edit/*
+# /api/v1/idea/employee/edit/*
 router.include_router(edit_idea_router)

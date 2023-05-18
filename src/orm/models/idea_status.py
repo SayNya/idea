@@ -4,8 +4,8 @@ from sqlalchemy.orm import relationship
 from src.orm.models.base import BaseIDModel
 
 
-class StatusModel(BaseIDModel):
-    __tablename__ = "statuses"
+class IdeaStatusModel(BaseIDModel):
+    __tablename__ = "idea_statuses"
 
     title = Column(String)
     code = Column(String)

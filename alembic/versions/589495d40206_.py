@@ -27,14 +27,14 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_categories_id"), "categories", ["id"], unique=False)
     op.create_table(
-        "statuses",
+        "idea_statuses",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("title", sa.String(), nullable=True),
         sa.Column("code", sa.String(), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_statuses_id"), "statuses", ["id"], unique=False)
+    op.create_index(op.f("ix_idea_statuses_id"), "idea_statuses", ["id"], unique=False)
     op.create_table(
         "system_roles",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
@@ -75,17 +75,17 @@ def upgrade() -> None:
     op.create_table(
         "idea_history",
         sa.Column("idea_id", sa.Integer(), nullable=False),
-        sa.Column("status_id", sa.Integer(), nullable=False),
+        sa.Column("idea_status_id", sa.Integer(), nullable=False),
         sa.Column("is_current_status", sa.Boolean(), nullable=True),
         sa.ForeignKeyConstraint(
             ["idea_id"],
             ["ideas.id"],
         ),
         sa.ForeignKeyConstraint(
-            ["status_id"],
-            ["statuses.id"],
+            ["idea_status_id"],
+            ["idea_statuses.id"],
         ),
-        sa.PrimaryKeyConstraint("idea_id", "status_id"),
+        sa.PrimaryKeyConstraint("idea_id", "idea_status_id"),
     )
     op.create_table(
         "user_system_role",
@@ -113,8 +113,8 @@ def downgrade() -> None:
     op.drop_table("ideas")
     op.drop_index(op.f("ix_system_roles_id"), table_name="system_roles")
     op.drop_table("system_roles")
-    op.drop_index(op.f("ix_statuses_id"), table_name="statuses")
-    op.drop_table("statuses")
+    op.drop_index(op.f("ix_idea_statuses_id"), table_name="idea_statuses")
+    op.drop_table("idea_statuses")
     op.drop_index(op.f("ix_categories_id"), table_name="categories")
     op.drop_table("categories")
     # ### end Alembic commands ###

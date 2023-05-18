@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from src.api.handlers.employee.edit_idea import EditIdeaHandler
 from src.api.middlewares.session import session
@@ -10,7 +10,7 @@ from src.utils.dependecies import get_current_user
 router = APIRouter(prefix="/edit", tags=["employee"])
 
 
-@router.put("/{idea_id}")
+@router.put("/{idea_id}", status_code=status.HTTP_200_OK)
 @session(commit=True)
 async def edit_idea(
     idea_id: int,
