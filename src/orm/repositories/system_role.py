@@ -9,6 +9,7 @@ class SystemRoleRepository(BaseRepository):
     Model = SystemRoleModel
 
     async def find_by_code(self, code: str) -> SystemRoleModel:
+        session = db_session.get()
         query = select(SystemRoleModel).filter_by(code=code)
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().first()

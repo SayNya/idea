@@ -111,7 +111,7 @@ class UpdateVotingEmployeesHandler:
         council = await self.technical_council_repository.find_with_dpt(council_id)
         if not council or council.department_id != department_responsible.department_id:
             raise NotFoundException(detail="Council not found")
-        if council.status != CouncilStatusesEnum.PRE_VOTING.value:
+        if council.status != CouncilStatusesEnum.PRE_VOTING:
             raise BadRequestException(
                 detail="can't change voting employees for council with current status"
             )
@@ -152,7 +152,7 @@ class UpdateVotingEmployeesHandler:
                 VoteModel(
                     poll_id=poll_id,
                     employee_id=employee_id,
-                    choice=VoteChoicesEnum.NO_CHOICE.value,
+                    choice=VoteChoicesEnum.NO_CHOICE,
                 )
                 for employee_id, poll_id in product(new_employees_ids, polls_ids)
             ]

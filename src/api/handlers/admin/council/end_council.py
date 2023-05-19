@@ -49,25 +49,25 @@ class ResponsibleEndCouncilHandler:
             raise NotFoundException(detail="council not found")
 
         # check council status
-        if council.status != CouncilStatusesEnum.ONLINE_VOTING.value:
+        if council.status != CouncilStatusesEnum.ONLINE_VOTING:
             raise BadRequestException(detail="can't end council with current status")
         # change council status
         await self.council_repository.update(
             council.id,
             {
-                "status": CouncilStatusesEnum.COMPLETED.value,
+                "status": CouncilStatusesEnum.COMPLETED,
                 "council_end": datetime.datetime.utcnow(),
             },
         )
         # update polls
         blocked_polls = await self.poll_repository.find_by_council_id_and_statuses(
-            council.id, [PollStatusesEnum.BLOCKED.value]
+            council.id, [PollStatusesEnum.BLOCKED]
         )
         ended_polls = await self.poll_repository.find_by_council_id_and_statuses(
-            council.id, [PollStatusesEnum.ENDED.value]
+            council.id, [PollStatusesEnum.ENDED]
         )
         opened_polls = await self.poll_repository.find_by_council_id_and_statuses(
-            council.id, [PollStatusesEnum.OPENED.value]
+            council.id, [PollStatusesEnum.OPENED]
         )
         if blocked_polls or ended_polls or opened_polls:
             await self.idea_repository.bulk_update(
@@ -76,6 +76,6 @@ class ResponsibleEndCouncilHandler:
             )
             await self.poll_repository.bulk_update(
                 [poll.id for poll in blocked_polls + ended_polls + opened_polls],
-                status=PollStatusesEnum.CANCELED.value,
+                status=PollStatusesEnum.CANCELED,
             )
         return CompleteCouncilResponse()

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Sequence
 
 from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import selectinload
@@ -12,6 +13,7 @@ class UserRepository(BaseRepository):
     Model = UserModel
 
     async def find_by_username(self, username: str) -> Model:
+        session = db_session.get()
         query = (
             select(UserModel)
             .options(
@@ -20,10 +22,11 @@ class UserRepository(BaseRepository):
             )
             .filter(or_(UserModel.username == username))
         )
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().first()
 
     async def get_user_by_token(self, token: str) -> Model:
+        session = db_session.get()
         query = (
             select(UserModel)
             .options(
@@ -32,8 +35,31 @@ class UserRepository(BaseRepository):
                 selectinload(UserModel.system_roles),
             )
             .filter(
-                and_(TokenModel.token == token, TokenModel.expires > datetime.now())
+                and_(TokenModel.user_id == UserModel.id, TokenModel.token == token, TokenModel.expires > datetime.now())
             )
         )
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().first()
+
+    async def get_users_by_ids_and_department_id(
+        self, user_ids: list[int], department_id: int
+    ) -> Model:
+        session = db_session.get()
+        query = select(UserModel).filter(
+            and_(UserModel.id.in_(user_ids), UserModel.department_id == department_id)
+        )
+        result = await session.execute(query)
+        return result.scalars().first()
+
+    async def get_default_voting_users_by_department_id(
+        self, department_id: int
+    ) -> Sequence[Model]:
+        session = db_session.get()
+        query = select(UserModel).filter(
+            and_(
+                UserModel.department_id == department_id,
+                UserModel.is_default_voter,
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().all()

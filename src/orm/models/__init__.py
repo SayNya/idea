@@ -16,3 +16,4 @@ from .user import UserModel
 from .user_idea import UserIdeaModel
 from .user_system_role import UserSystemRoleModel
 from .vote import VoteModel
+from .department_admin import DepartmentAdminModel

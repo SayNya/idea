@@ -17,10 +17,10 @@ class MyIdeasHandler:
 
     async def handle(self, user_id: int) -> EmployeeMyIdeasResponse:
         idea_author_role = await self.idea_roles_repository.find_by_code(
-            IdeaRoleCodeEnum.IDEA_AUTHOR.value
+            IdeaRoleCodeEnum.IDEA_AUTHOR
         )
         idea_coauthor_role = await self.idea_roles_repository.find_by_code(
-            IdeaRoleCodeEnum.IDEA_COAUTHOR.value
+            IdeaRoleCodeEnum.IDEA_COAUTHOR
         )
         role_ids = [idea_author_role.id, idea_coauthor_role.id]
         ideas = await self.idea_repository.find_by_user(user_id, role_ids)

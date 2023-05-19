@@ -39,7 +39,7 @@ class StartPreVotingHandler:
         if not council:
             raise NotFoundException(detail="council not found")
         # check council status
-        if council.status != CouncilStatusesEnum.CREATED.value:
+        if council.status != CouncilStatusesEnum.CREATED:
             raise BadRequestException(
                 detail="can't start online voting for council with current status"
             )
@@ -56,7 +56,7 @@ class StartPreVotingHandler:
                     idea_id=idea.id,
                     number=number,
                     council_id=council.id,
-                    status=PollStatusesEnum.OPENED.value,
+                    status=PollStatusesEnum.OPENED,
                 )
                 for idea, number in zip(
                     ideas_for_council, range(1, len(ideas_for_council) + 1)
@@ -74,13 +74,13 @@ class StartPreVotingHandler:
                     VoteModel(
                         poll_id=created_poll.id,
                         employee_id=council_employee.employee_id,
-                        choice=VoteChoicesEnum.NO_CHOICE.value,
+                        choice=VoteChoicesEnum.NO_CHOICE,
                     )
                     for council_employee in council_employees
                 ]
             )
         await self.technical_council_repository.update(
-            council.id, {"status": CouncilStatusesEnum.PRE_VOTING.value}
+            council.id, {"status": CouncilStatusesEnum.PRE_VOTING}
         )
         # check online voting
         if council.planned_council_start <= datetime.datetime.utcnow():

@@ -9,7 +9,7 @@ from src.orm.models import IdeaModel, UserIdeaModel, IdeaHistoryModel, IdeaCateg
 from src.orm.repositories import (
     IdeaRepository,
     IdeaHistoryRepository,
-    StatusRepository,
+    IdeaStatusRepository,
     DepartmentRepository,
     CategoryRepository,
     IdeaCategoryRepository,
@@ -28,7 +28,7 @@ class SubmitIdeaHandler:
         idea_role_repository: IdeaRoleRepository = Depends(),
         user_idea_repository: UserIdeaRepository = Depends(),
         idea_history_repository: IdeaHistoryRepository = Depends(),
-        status_repository: StatusRepository = Depends(),
+        idea_status_repository: IdeaStatusRepository = Depends(),
         department_repository: DepartmentRepository = Depends(),
         category_repository: CategoryRepository = Depends(),
         idea_category_repository: IdeaCategoryRepository = Depends(),
@@ -37,7 +37,7 @@ class SubmitIdeaHandler:
         self.idea_role_repository = idea_role_repository
         self.user_idea_repository = user_idea_repository
         self.idea_history_repository = idea_history_repository
-        self.status_repository = status_repository
+        self.idea_status_repository = idea_status_repository
         self.department_repository = department_repository
         self.category_repository = category_repository
         self.idea_category_repository = idea_category_repository
@@ -49,14 +49,14 @@ class SubmitIdeaHandler:
             raise BadRequestException(detail="author can't be co-author")
         # get roles
         gather_chain = [
-            self.idea_role_repository.find_by_code(role.value)
+            self.idea_role_repository.find_by_code(role)
             for role in [
                 IdeaRoleCodeEnum.IDEA_AUTHOR,
                 IdeaRoleCodeEnum.IDEA_COAUTHOR,
             ]
         ]
         gather_chain.append(
-            self.status_repository.find_by_code(IdeaStatusCodeEnum.PROPOSED.value)
+            self.idea_status_repository.find_by_code(IdeaStatusCodeEnum.PROPOSED)
         )
         result = await asyncio.gather(*gather_chain)
         if not all(result):
@@ -70,7 +70,7 @@ class SubmitIdeaHandler:
         if active_categories_ids != submit_idea_schema.categories_ids:
             raise BadRequestException(detail="wrong categories")
 
-        author_role, coauthor_role, applied_status = result
+        author_role, coauthor_role, proposed_status = result
 
         # create idea
         created_idea = await self.idea_repository.create(
@@ -82,7 +82,7 @@ class SubmitIdeaHandler:
                 created_at=datetime.datetime.utcnow(),
             )
         )
-        print("4" * 20)
+
         # author
         idea_author = UserIdeaModel(
             idea_id=created_idea.id, user_id=user_info.id, idea_role_id=author_role.id
@@ -103,7 +103,7 @@ class SubmitIdeaHandler:
         await self.idea_history_repository.create(
             IdeaHistoryModel(
                 idea_id=created_idea.id,
-                status_id=applied_status.id,
+                idea_status_id=proposed_status.id,
                 created_at=datetime.datetime.utcnow(),
             )
         )

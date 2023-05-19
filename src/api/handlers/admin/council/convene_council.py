@@ -4,148 +4,153 @@ from fastapi import Depends
 
 from src.exceptions.exceptions.application import ApplicationException
 from src.exceptions.exceptions.bad_request import BadRequestException
+from src.exceptions.exceptions.not_found import NotFoundException
 from src.orm.models import (
-    CouncilEmployeesModel,
-    CouncilResultsModel,
-    EmployeeRoleModel,
-    TechnicalCouncilModel,
+    CouncilUserModel,
+    CouncilModel,
+    PollModel,
 )
 from src.orm.repositories import (
-    CouncilEmployeesRepository,
-    CouncilResultsRepository,
-    DepartmentAdminsRepository,
+    DepartmentAdminRepository,
     DepartmentRepository,
-    EmployeeRoleRepository,
-    RoleRepository,
-    TechnicalCouncilRepository,
+    SystemRoleRepository,
+    CouncilRepository,
     UserRepository,
+    CouncilUserRepository,
+    IdeaRepository,
+    IdeaStatusRepository,
+    PollRepository,
+    PollStatusRepository,
 )
-from src.orm.schemas.common.enum.role import RolesCodes
-from src.orm.schemas.enum import (
-    CouncilResultAttributeKeysEnum,
-    CouncilResultsAttributeTypesEnum,
-    CouncilStatusesEnum,
-)
-from src.orm.schemas.requests.responsible.council import ConveneCouncilRequest
+from src.schemas.enum import IdeaStatusCodeEnum
+from src.schemas.enum.council_status import CouncilStatusEnum
+from src.schemas.enum.poll_status import PollStatusCodeEnum
+from src.schemas.requests.admin.convene_council import ConveneCouncilRequest
 from src.schemas.responses.auth import UserAuthResponse
-from src.services.scheduler.tasks.responsible.acceptance.start_pre_voting import (
-    start_pre_voting_task,
-)
+
+# from src.services.scheduler.tasks.responsible.acceptance.start_pre_voting import (
+#     start_pre_voting_task,
+# )
 
 
 class ConveneCouncilHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        council_repository: CouncilRepository = Depends(),
         department_repository: DepartmentRepository = Depends(),
-        council_employees_repository: CouncilEmployeesRepository = Depends(),
-        council_results_repository: CouncilResultsRepository = Depends(),
-        department_admins_repository: DepartmentAdminsRepository = Depends(),
-        employee_role_repository: EmployeeRoleRepository = Depends(),
-        role_repository: RoleRepository = Depends(),
+        department_admin_repository: DepartmentAdminRepository = Depends(),
+        system_role_repository: SystemRoleRepository = Depends(),
         user_repository: UserRepository = Depends(),
+        council_user_repository: CouncilUserRepository = Depends(),
+        idea_repository: IdeaRepository = Depends(),
+        idea_status_repository: IdeaStatusRepository = Depends(),
+        poll_repository: PollRepository = Depends(),
+        poll_status_repository: PollStatusRepository = Depends(),
     ):
-        self.technical_council_repository = technical_council_repository
+        self.council_repository = council_repository
         self.department_repository = department_repository
-        self.council_employees_repository = council_employees_repository
-        self.council_results_repository = council_results_repository
-        self.department_admins_repository = department_admins_repository
-        self.employee_role_repository = employee_role_repository
-        self.role_repository = role_repository
+        self.department_admin_repository = department_admin_repository
+        self.system_role_repository = system_role_repository
         self.user_repository = user_repository
+        self.council_user_repository = council_user_repository
+        self.idea_repository = idea_repository
+        self.idea_status_repository = idea_status_repository
+        self.poll_repository = poll_repository
+        self.poll_status_repository = poll_status_repository
 
     async def handle(
         self,
         user_info: UserAuthResponse,
         convene_council_request: ConveneCouncilRequest,
     ) -> None:
-        department_responsible = (
-            await self.department_admins_repository.get_department_of_responsible(
-                user_info.id
-            )
+        department_admin = (
+            await self.department_admin_repository.get_department_of_admin(user_info.id)
         )
-        if not department_responsible:
-            raise ApplicationException(detail="user is not department_responsible")
+        if not department_admin:
+            raise ApplicationException(detail="user is not department_admin")
 
-        all_department_admins_ids = set(
-            await self.department_admins_repository.get_department_responsible_ids(
-                department_responsible.department_id
-            )
+        voters = self.user_repository.get_users_by_ids_and_department_id(
+            convene_council_request.voting_users_ids, department_admin.department_id
         )
-        if crossing := all_department_admins_ids & set(
-            convene_council_request.voting_employees_ids
-        ):
-            raise BadRequestException(
-                detail={"message": "wrong voters", "votersIds": list(crossing)}
-            )
+        if len(voters) != len(convene_council_request.voting_users_ids):
+            raise BadRequestException(detail="wrong voters")
 
-        active_councils = (
-            await self.technical_council_repository.find_active_for_responsible(
-                department_responsible.department_id,
+        active_council = await self.council_repository.find_active_for_admin(
+            department_admin.department_id,
+        )
+        if active_council:
+            raise BadRequestException(detail="department have active council")
+
+        default_voters = (
+            await self.user_repository.get_default_voting_users_by_department_id(
+                department_admin.department_id
             )
         )
-        if active_councils:
-            raise BadRequestException(detail="department have active councils")
-        role = await self.role_repository.find_by_code(RolesCodes.IDEA_VOTER.value)
-        if not role:
-            raise ApplicationException(detail="role not found")
+        final_voters = set(voters) | set(default_voters)
+        accepted_status = await self.idea_status_repository.find_by_code(
+            IdeaStatusCodeEnum.ACCEPTED
+        )
+        if not accepted_status:
+            raise ApplicationException()
+
+        approved_ideas = (
+            await self.idea_repository.find_accepted_ideas_by_status_and_department(
+                accepted_status.id, department_admin.department_id
+            )
+        )
+        if not approved_ideas:
+            raise NotFoundException(detail="no approved ideas")
+        poll_opened_status = await self.poll_status_repository.find_by_code(
+            PollStatusCodeEnum.OPENED
+        )
+        if not poll_opened_status:
+            raise ApplicationException()
+
         # create council
-        created_council = await self.technical_council_repository.create(
-            TechnicalCouncilModel(
-                department_id=department_responsible.department_id,
+        created_council = await self.council_repository.create(
+            CouncilModel(
+                department_id=department_admin.department_id,
                 chairman_id=convene_council_request.chairman_id,
                 planned_council_start=convene_council_request.planned_council_start,
-                status=CouncilStatusesEnum.CREATED.value,
+                council_status=CouncilStatusEnum.CREATED,
             )
         )
 
         # link voting employees to council
-        await self.council_employees_repository.bulk_save(
+        await self.council_user_repository.bulk_save(
             [
-                CouncilEmployeesModel(
+                CouncilUserModel(
                     council_id=created_council.id,
-                    employee_id=voting_employee,
+                    user=voting_employee,
                 )
-                for voting_employee in convene_council_request.voting_employees_ids
+                for voting_employee in final_voters
             ]
         )
-        current_employees_ids_with_role = set(
-            await self.employee_role_repository.find_employees_ids_by_role_id(role.id)
-        )
-        voters_ids = set(convene_council_request.voting_employees_ids)
-        await self.employee_role_repository.bulk_save(
+
+        # create polls
+        await self.poll_repository.bulk_save(
             [
-                EmployeeRoleModel(employee_id=user_id, role_id=role.id)
-                for user_id in voters_ids - current_employees_ids_with_role
-            ]
-        )
-        # create zero results of council
-        await self.council_results_repository.bulk_save(
-            [
-                CouncilResultsModel(
+                PollModel(
+                    idea_id=idea.id,
                     council_id=created_council.id,
-                    attribute_key=attribute_key,
-                    attribute_type=CouncilResultsAttributeTypesEnum.NUMBER.value,
-                    result="0",
+                    poll_status_id=poll_opened_status.id
+
                 )
-                for attribute_key in [
-                    CouncilResultAttributeKeysEnum.ACCEPTED_IDEAS.value,
-                    CouncilResultAttributeKeysEnum.DECLINED_IDEAS.value,
-                    CouncilResultAttributeKeysEnum.TO_UPDATING_IDEAS.value,
-                ]
+                for idea in approved_ideas
             ]
         )
-        # check pre-voting
-        if (
-            created_council.planned_council_start - datetime.timedelta(days=2)
-            <= datetime.datetime.utcnow()
-        ):
-            # if it already must be opened
-            await start_pre_voting_task(created_council.id)
-        elif (
-            created_council.planned_council_start - datetime.timedelta(days=2)
-        ).date() == datetime.datetime.utcnow().date():
-            # or if it must be opened today
-            start_pre_voting_task.at(created_council.planned_council_start).do(
-                created_council.id
-            )
+
+        # # check pre-voting
+        # if (
+        #     created_council.planned_council_start - datetime.timedelta(days=2)
+        #     <= datetime.datetime.utcnow()
+        # ):
+        #     # if it already must be opened
+        #     await start_pre_voting_task(created_council.id)
+        # elif (
+        #     created_council.planned_council_start - datetime.timedelta(days=2)
+        # ).date() == datetime.datetime.utcnow().date():
+        #     # or if it must be opened today
+        #     start_pre_voting_task.at(created_council.planned_council_start).do(
+        #         created_council.id
+        #     )

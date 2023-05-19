@@ -12,7 +12,7 @@ from src.orm.models import (
     IdeaRoleModel,
 )
 from src.orm.repositories.base import BaseRepository
-from src.schemas.enum import IdeaRoleCodeEnum
+from src.schemas.enum import IdeaRoleCodeEnum, IdeaStatusCodeEnum
 
 
 class IdeaRepository(BaseRepository):
@@ -76,8 +76,23 @@ class IdeaRepository(BaseRepository):
                     UserModel.id == UserIdeaModel.user_id,
                     UserModel.id == employee_id,
                     UserIdeaModel.idea_role_id == IdeaRoleModel.id,
-                    IdeaRoleModel.code == IdeaRoleCodeEnum.IDEA_AUTHOR.value,
+                    IdeaRoleModel.code == IdeaRoleCodeEnum.IDEA_AUTHOR,
                 )
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().first()
+
+    async def find_accepted_ideas_by_status_and_department(
+        self, status_id: int, department_id: int
+    ):
+        session = db_session.get()
+        query = select(IdeaModel).filter(
+            and_(
+                IdeaModel.department_id == department_id,
+                IdeaModel.id == IdeaHistoryModel.idea_id,
+                IdeaHistoryModel.idea_status_id == status_id,
+                IdeaHistoryModel.is_current_status,
             )
         )
         result = await session.execute(query)

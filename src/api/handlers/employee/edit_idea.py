@@ -108,8 +108,6 @@ class EditIdeaHandler:
                 "department_id": edit_idea_request.department_id,
             },
         )
-        print(type(edit_idea_request.co_authors_ids))
-        print(type(current_co_authors_ids))
         # update users
         await self.employee_idea_repository.bulk_delete_for_idea_by_role_and_user_ids(
             idea.id,

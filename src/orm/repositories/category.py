@@ -11,8 +11,9 @@ class CategoryRepository(BaseRepository):
     Model = CategoryModel
 
     async def find_active_by_ids(self, ids=list[int]) -> Sequence[CategoryModel]:
+        session = db_session.get()
         query = select(CategoryModel).filter(
             CategoryModel.id.in_(ids), CategoryModel.is_active
         )
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().all()

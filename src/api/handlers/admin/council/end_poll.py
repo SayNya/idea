@@ -49,16 +49,16 @@ class ResponsibleEndPollHandler:
                 detail="can't end poll with current council status"
             )
         # check poll status
-        if poll.status != PollStatusesEnum.OPENED.value:
+        if poll.status != PollStatusesEnum.OPENED:
             raise BadRequestException(detail="can't end poll with current status")
         # check council status
-        if poll.council.status != CouncilStatusesEnum.ONLINE_VOTING.value:
+        if poll.council.status != CouncilStatusesEnum.ONLINE_VOTING:
             raise BadRequestException(
                 detail="can't end poll for council with current status"
             )
         # end poll
         poll = await self.poll_repository.update(
-            poll.id, {"status": PollStatusesEnum.ENDED.value}
+            poll.id, {"status": PollStatusesEnum.ENDED}
         )
 
         # count votes
@@ -66,20 +66,20 @@ class ResponsibleEndPollHandler:
         accepts = 0
         declines = 0
         for vote in votes:
-            if vote.choice == VoteChoicesEnum.ACCEPT.value:
+            if vote.choice == VoteChoicesEnum.ACCEPT:
                 accepts += 1
-            elif vote.choice == VoteChoicesEnum.DECLINE.value:
+            elif vote.choice == VoteChoicesEnum.DECLINE:
                 declines += 1
 
         # save result of poll
         await self.poll_choices_repository.bulk_save(
             [
                 PollChoicesModel(
-                    poll_id=poll.id, choice=VoteChoicesEnum.ACCEPT.value, amount=accepts
+                    poll_id=poll.id, choice=VoteChoicesEnum.ACCEPT, amount=accepts
                 ),
                 PollChoicesModel(
                     poll_id=poll.id,
-                    choice=VoteChoicesEnum.DECLINE.value,
+                    choice=VoteChoicesEnum.DECLINE,
                     amount=declines,
                 ),
             ]

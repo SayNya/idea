@@ -50,18 +50,18 @@ class StartOnlineVotingHandler:
         ):
             raise NotFoundException(detail="Council not found")
         # check council status
-        if council.status != CouncilStatusesEnum.PRE_VOTING.value:
+        if council.status != CouncilStatusesEnum.PRE_VOTING:
             raise BadRequestException(
                 detail="Cant start online voting for council with current status"
             )
         await self.technical_council_repository.update(
             council.id,
             {
-                "status": CouncilStatusesEnum.ONLINE_VOTING.value,
+                "status": CouncilStatusesEnum.ONLINE_VOTING,
                 "council_start": datetime.datetime.utcnow(),
             },
         )
         polls = await self.poll_repository.find_by_council_id(council.id)
         await self.poll_repository.bulk_update(
-            [poll.id for poll in polls][1:], status=PollStatusesEnum.BLOCKED.value
+            [poll.id for poll in polls][1:], status=PollStatusesEnum.BLOCKED
         )

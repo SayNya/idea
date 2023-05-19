@@ -9,6 +9,7 @@ class IdeaRoleRepository(BaseRepository):
     Model = IdeaRoleModel
 
     async def find_by_code(self, code: str) -> IdeaRoleModel:
+        session = db_session.get()
         query = select(IdeaRoleModel).filter_by(code=code)
-        result = await db_session.get().execute(query)
+        result = await session.execute(query)
         return result.scalars().first()

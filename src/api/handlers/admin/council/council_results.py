@@ -54,7 +54,7 @@ class CouncilResultsHandler:
             or council.employees
         ):
             raise NotFoundException(detail="council not found")
-        if council.status != CouncilStatusesEnum.COMPLETED.value:
+        if council.status != CouncilStatusesEnum.COMPLETED:
             return
         # get data
         filters = council_results_param.filter_to_dict

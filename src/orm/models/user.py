@@ -15,6 +15,8 @@ class UserModel(BaseIDModel):
     last_name = Column(String(40), nullable=True)
     middle_name = Column(String(40), nullable=True)
 
+    is_default_voter = Column(Boolean, default=False, nullable=True)
+
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
     department = relationship("DepartmentModel", back_populates="users")
 
