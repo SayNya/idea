@@ -13,4 +13,4 @@ class IdeaHistoryModel(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     idea = relationship("IdeaModel", back_populates="histories")
-    status = relationship("StatusModel", back_populates="histories")
+    idea_status = relationship("IdeaStatusModel", back_populates="histories")

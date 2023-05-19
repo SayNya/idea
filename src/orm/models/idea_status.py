@@ -11,4 +11,4 @@ class IdeaStatusModel(BaseIDModel):
     code = Column(String)
     description = Column(Text, nullable=True)
 
-    histories = relationship("IdeaHistoryModel", back_populates="status")
+    histories = relationship("IdeaHistoryModel", back_populates="idea_status")

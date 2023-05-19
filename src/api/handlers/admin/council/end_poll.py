@@ -27,7 +27,9 @@ class ResponsibleEndPollHandler:
         self.poll_choices_repository = poll_choices_repository
         self.department_admins_repository = department_admins_repository
 
-    async def handle(self, council_id: int, poll_number: int, user_info: UserAuthResponse) -> None:
+    async def handle(
+        self, council_id: int, poll_number: int, user_info: UserAuthResponse
+    ) -> None:
         department_responsible = (
             await self.department_admins_repository.get_department_of_responsible(
                 user_info.id

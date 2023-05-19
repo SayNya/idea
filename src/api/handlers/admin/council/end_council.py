@@ -33,7 +33,9 @@ class ResponsibleEndCouncilHandler:
         self.idea_repository = idea_repository
         self.department_admins_repository = department_admins_repository
 
-    async def handle(self, council_id: int, user_info: UserAuthResponse) -> CompleteCouncilResponse:
+    async def handle(
+        self, council_id: int, user_info: UserAuthResponse
+    ) -> CompleteCouncilResponse:
         department_responsible = (
             await self.department_admins_repository.get_department_of_responsible(
                 user_info.id

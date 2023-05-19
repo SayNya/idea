@@ -37,7 +37,9 @@ class IdeaRepository(BaseRepository):
                 ),
             )
             .options(
-                selectinload(IdeaModel.histories).selectinload(IdeaHistoryModel.status),
+                selectinload(IdeaModel.histories).selectinload(
+                    IdeaHistoryModel.idea_status
+                ),
                 with_loader_criteria(
                     IdeaHistoryModel, IdeaHistoryModel.is_current_status.is_(True)
                 ),

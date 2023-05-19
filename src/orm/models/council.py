@@ -25,4 +25,4 @@ class CouncilModel(BaseIDModel):
         "UserModel",
         secondary="council_user",
     )
-    polls = relationship("PollModel", order_by="PollModel.id")
+    polls = relationship("PollModel", order_by="PollModel.id", back_populates="council")

@@ -13,9 +13,7 @@ class CouncilUserModel(Base):
         primary_key=True,
         nullable=False,
     )
-    user_id = Column(
-        Integer, ForeignKey("users.id"), primary_key=True, nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, nullable=False)
 
     council = relationship("CouncilModel")  # council_id
     user = relationship("UserModel")  # user_id
