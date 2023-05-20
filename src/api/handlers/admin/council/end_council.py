@@ -12,7 +12,7 @@ from src.orm.repositories import (
     DepartmentAdminsRepository,
     IdeaRepository,
     PollRepository,
-    TechnicalCouncilRepository,
+    CouncilRepository,
 )
 from src.orm.schemas.enum import CouncilStatusesEnum, PollStatusesEnum
 from src.schemas.responses.auth import UserAuthResponse
@@ -22,7 +22,7 @@ from src.orm.schemas.responses.responsible.council import CompleteCouncilRespons
 class ResponsibleEndCouncilHandler:
     def __init__(
         self,
-        council_repository: TechnicalCouncilRepository = Depends(),
+        council_repository: CouncilRepository = Depends(),
         poll_repository: PollRepository = Depends(),
         idea_repository: IdeaRepository = Depends(),
         department_admins_repository: DepartmentAdminsRepository = Depends(),
@@ -44,7 +44,7 @@ class ResponsibleEndCouncilHandler:
         if not department_responsible:
             raise ApplicationException(detail="user is not department_responsible")
         # check existing of council
-        council = await self.council_repository.find_with_dpt(council_id)
+        council = await self.council_repository.find_with_department(council_id)
         if not council or council.department_id != department_responsible.department_id:
             raise NotFoundException(detail="council not found")
 

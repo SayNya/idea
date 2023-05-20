@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends
@@ -7,61 +7,79 @@ from src.exceptions.exceptions.application import ApplicationException
 from src.exceptions.exceptions.bad_request import BadRequestException
 from src.exceptions.exceptions.not_found import NotFoundException
 from src.orm.repositories import (
-    DepartmentAdminsRepository,
+    DepartmentAdminRepository,
     PollRepository,
-    TechnicalCouncilRepository,
+    CouncilRepository,
+    CouncilStatusRepository,
+    PollStatusRepository,
 )
-from src.orm.schemas.enum import CouncilStatusesEnum, PollStatusesEnum
+from src.schemas.enum import PollStatusCodeEnum
+
+from src.schemas.enum.council_status import CouncilStatusCodeEnum
 from src.schemas.responses.auth import UserAuthResponse
 
 
 class StartOnlineVotingHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        council_repository: CouncilRepository = Depends(),
         poll_repository: PollRepository = Depends(),
-        department_admins_repository: DepartmentAdminsRepository = Depends(),
+        department_admin_repository: DepartmentAdminRepository = Depends(),
+        council_status_repository: CouncilStatusRepository = Depends(),
+        poll_status_repository: PollStatusRepository = Depends(),
         *,
         check_user_info: bool = True,
     ):
-        self.technical_council_repository = technical_council_repository
+        self.council_repository = council_repository
         self.poll_repository = poll_repository
-        self.department_admins_repository = department_admins_repository
+        self.department_admin_repository = department_admin_repository
+        self.council_status_repository = council_status_repository
+        self.poll_status_repository = poll_status_repository
         self.check_user_info = check_user_info
 
-    async def handle(self, council_id: int, user_info: Optional[User] = None) -> None:
+    async def handle(
+        self, council_id: int, user_info: Optional[UserAuthResponse] = None
+    ) -> None:
         if self.check_user_info:
             if not user_info:
                 raise ApplicationException(detail="user_info is required parameter")
             department_responsible = (
-                await self.department_admins_repository.get_department_of_responsible(
+                await self.department_admin_repository.get_department_of_admin(
                     user_info.id
                 )
             )
             if not department_responsible:
-                raise ApplicationException(detail="user is not department_responsible")
+                raise ApplicationException(detail="user is not department_admin")
         else:
             department_responsible = None
         # check existing of council
-        council = await self.technical_council_repository.find_with_dpt(council_id)
+        council = await self.council_repository.find_with_department(council_id)
         if not council or (
             self.check_user_info
             and council.department_id != department_responsible.department_id
         ):
             raise NotFoundException(detail="Council not found")
         # check council status
-        if council.status != CouncilStatusesEnum.PRE_VOTING:
+        if council.council_status.code != CouncilStatusCodeEnum.CREATED:
             raise BadRequestException(
                 detail="Cant start online voting for council with current status"
             )
-        await self.technical_council_repository.update(
+        council_online_voting_status = (
+            await self.council_status_repository.find_by_code(
+                CouncilStatusCodeEnum.ONLINE_VOTING
+            )
+        )
+        if not council_online_voting_status:
+            raise ApplicationException()
+
+        await self.council_repository.update(
             council.id,
             {
-                "status": CouncilStatusesEnum.ONLINE_VOTING,
-                "council_start": datetime.datetime.utcnow(),
+                "council_status_id": council_online_voting_status.id,
+                "council_start": datetime.utcnow(),
             },
         )
         polls = await self.poll_repository.find_by_council_id(council.id)
         await self.poll_repository.bulk_update(
-            [poll.id for poll in polls][1:], status=PollStatusesEnum.BLOCKED
+            [poll.id for poll in polls], status=PollStatusCodeEnum.BLOCKED
         )

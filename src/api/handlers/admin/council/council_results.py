@@ -8,7 +8,7 @@ from src.orm.repositories import (
     CouncilResultsRepository,
     DepartmentAdminsRepository,
     PollRepository,
-    TechnicalCouncilRepository,
+    CouncilRepository,
 )
 from src.orm.schemas.enum import CouncilResultAttributeKeysEnum, CouncilStatusesEnum
 from src.orm.schemas.query.responsible.council.acceptance import CouncilResultsParam
@@ -22,7 +22,7 @@ from src.services.department import mask_as_related_bu
 class CouncilResultsHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        technical_council_repository: CouncilRepository = Depends(),
         council_results_repository: CouncilResultsRepository = Depends(),
         poll_repository: PollRepository = Depends(),
         department_admins_repository: DepartmentAdminsRepository = Depends(),

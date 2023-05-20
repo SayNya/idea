@@ -3,6 +3,7 @@ from .council import CouncilModel
 from .council_status import CouncilStatusModel
 from .council_user import CouncilUserModel
 from .department import DepartmentModel
+from .department_admin import DepartmentAdminModel
 from .idea import IdeaModel
 from .idea_category import IdeaCategoryModel
 from .idea_history import IdeaHistoryModel
@@ -16,4 +17,3 @@ from .user import UserModel
 from .user_idea import UserIdeaModel
 from .user_system_role import UserSystemRoleModel
 from .vote import VoteModel
-from .department_admin import DepartmentAdminModel

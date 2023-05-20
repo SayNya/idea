@@ -17,7 +17,7 @@ class IdeaHistoryRepository(BaseRepository):
             .filter(
                 and_(
                     IdeaHistoryModel.idea_id == idea_id,
-                    IdeaHistoryModel.is_current_status
+                    IdeaHistoryModel.is_current_status,
                 )
             )
         )

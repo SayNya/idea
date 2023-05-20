@@ -1,26 +1,29 @@
-# from fastapi import APIRouter, Depends, status
-#
-# from src.api.handlers.admin.council import ConveneCouncilHandler
-# from src.api.middlewares.role_checker import PermissionChecker
-# from src.api.middlewares.session import session
-# from src.schemas.enum.system_role import SystemRoleCodeEnum
-# from src.schemas.requests.admin.convene_council import ConveneCouncilRequest
-# from src.schemas.responses.auth import UserAuthResponse
-#
-# router = APIRouter(prefix="/council")
-#
-#
-# @router.post("", status_code=status.HTTP_201_CREATED)
-# @session(commit=True)
-# async def convene_council_by_admin(
-#     convene_council_request: ConveneCouncilRequest,
-#     convene_council_handler: ConveneCouncilHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     await convene_council_handler.handle(user_info, convene_council_request)
-#     return {}
-#
-#
+from fastapi import APIRouter, Depends, status
+
+from src.api.handlers.admin.council import (
+    ConveneCouncilHandler,
+    StartOnlineVotingHandler,
+)
+from src.api.middlewares.role_checker import PermissionChecker
+from src.api.middlewares.session import session
+from src.schemas.enum.system_role import SystemRoleCodeEnum
+from src.schemas.requests.admin.convene_council import ConveneCouncilRequest
+from src.schemas.responses.auth import UserAuthResponse
+
+router = APIRouter(prefix="/council")
+
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+@session(commit=True)
+async def convene_council_by_admin(
+    convene_council_request: ConveneCouncilRequest,
+    convene_council_handler: ConveneCouncilHandler = Depends(),
+    user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
+):
+    await convene_council_handler.handle(user_info, convene_council_request)
+    return {}
+
+
 # @router.get("/history")
 # @session()
 # async def councils_history(
@@ -93,17 +96,17 @@
 #     )
 #
 #
-# @router.post("/{council_id}/start-online-voting")
-# @session(commit=True)
-# async def start_online_voting_by_responsible(
-#     council_id: int,
-#     start_online_voting_handler: StartOnlineVotingHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     await start_online_voting_handler.handle(council_id, user_info)
-#     return {}
-#
-#
+@router.post("/{council_id}/start-online-voting")
+@session(commit=True)
+async def start_online_voting_by_responsible(
+    council_id: int,
+    start_online_voting_handler: StartOnlineVotingHandler = Depends(),
+    user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
+):
+    await start_online_voting_handler.handle(council_id, user_info)
+    return {}
+
+
 # @router.get("/{council_id}/voting-employees")
 # @session()
 # async def get_list_of_voting_employees(

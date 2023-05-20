@@ -18,9 +18,7 @@ router = APIRouter(prefix="/accept_idea", tags=["admin"])
 async def accept_idea_by_admin(
     accept_idea_schema: AcceptIdeaRequest,
     accept_idea_handler: AcceptIdeaHandler = Depends(),
-    user_info: UserAuthResponse = Depends(
-        PermissionChecker(SystemRoleCodeEnum.ADMIN)
-    ),
+    user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
 ):
     await accept_idea_handler.handle(accept_idea_schema, user_info)
     return {}

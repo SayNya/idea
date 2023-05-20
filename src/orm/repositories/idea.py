@@ -85,7 +85,7 @@ class IdeaRepository(BaseRepository):
 
     async def find_accepted_ideas_by_status_and_department(
         self, status_id: int, department_id: int
-    ):
+    ) -> Sequence[IdeaModel]:
         session = db_session.get()
         query = select(IdeaModel).filter(
             and_(
@@ -96,4 +96,4 @@ class IdeaRepository(BaseRepository):
             )
         )
         result = await session.execute(query)
-        return result.scalars().first()
+        return result.scalars().all()

@@ -1,6 +1,6 @@
-import datetime
+from datetime import datetime, timezone
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 def to_camel_case(snake_case_string: str) -> str:
@@ -10,14 +10,16 @@ def to_camel_case(snake_case_string: str) -> str:
 
 class BaseRequest(BaseModel):
     class Config:
-        pass
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+        }
 
 
 class BaseResponse(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {
-            datetime.datetime: lambda x: x.replace(
-                tzinfo=datetime.timezone.utc
-            ).isoformat(timespec="seconds"),
+            datetime: lambda x: x.replace(tzinfo=timezone.utc).isoformat(
+                timespec="seconds"
+            ),
         }

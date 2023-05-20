@@ -1,7 +1,8 @@
 # from .close_poll import ClosePollHandler
-# from .convene_council import (
-#     ConveneCouncilHandler,
-# )
+from .convene_council import (
+    ConveneCouncilHandler,
+)
+
 # from .council_details import (
 #     CouncilDetailsHandler,
 # )
@@ -24,9 +25,10 @@
 # from .poll_details import (
 #     PollDetailsHandler,
 # )
-# from .start_online_voting import (
-#     StartOnlineVotingHandler,
-# )
+from .start_online_voting import (
+    StartOnlineVotingHandler,
+)
+
 # from .start_pre_voting import (
 #     StartPreVotingHandler,
 # )

@@ -4,7 +4,7 @@ from src.exceptions.exceptions.not_found import NotFoundException
 from src.orm.repositories import (
     DepartmentAdminsRepository,
     PollRepository,
-    TechnicalCouncilRepository,
+    CouncilRepository,
     VoteRepository,
 )
 from src.orm.schemas.enum import PollStatusesEnum
@@ -18,7 +18,7 @@ from src.services.department import mask_as_related_bu
 class CouncilDetailsHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        technical_council_repository: CouncilRepository = Depends(),
         poll_repository: PollRepository = Depends(),
         department_admins_repository: DepartmentAdminsRepository = Depends(),
         vote_repository: VoteRepository = Depends(),

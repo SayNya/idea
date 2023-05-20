@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from pydantic.class_validators import validator
 from pydantic.types import PositiveInt, conlist
@@ -9,7 +9,7 @@ from src.schemas.base import BaseRequest
 
 class ConveneCouncilRequest(BaseRequest):
     voting_users_ids: conlist(item_type=int, unique_items=True, min_items=1)
-    planned_council_start: UTCDatetime
+    planned_council_start: datetime
     chairman_id: PositiveInt
 
     @validator("chairman_id")
@@ -20,6 +20,10 @@ class ConveneCouncilRequest(BaseRequest):
 
     @validator("planned_council_start")
     def validate_council_start(cls, v):
-        if v < datetime.datetime.utcnow():
+        if v < datetime.utcnow():
             raise ValueError("start of council can't be in the past")
         return v
+
+    @validator("planned_council_start", pre=True)
+    def time_validate(cls, v):
+        return datetime.fromisoformat(v)

@@ -11,7 +11,7 @@ from src.orm.repositories import (
     CouncilEmployeesRepository,
     DepartmentAdminsRepository,
     PollRepository,
-    TechnicalCouncilRepository,
+    CouncilRepository,
     UserRepository,
     VoteRepository,
 )
@@ -24,7 +24,7 @@ from src.orm.schemas.responses.base import BaseVotingEmployeeResponse
 class GetVotingEmployeesHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        technical_council_repository: CouncilRepository = Depends(),
         council_employees_repository: CouncilEmployeesRepository = Depends(),
         department_admins_repository: DepartmentAdminsRepository = Depends(),
     ):
@@ -43,7 +43,9 @@ class GetVotingEmployeesHandler:
         if not department_responsible:
             raise ApplicationException(detail="user is not department_responsible")
         # check existing of council
-        council = await self.technical_council_repository.find_with_dpt(council_id)
+        council = await self.technical_council_repository.find_with_department(
+            council_id
+        )
         if not council or council.department_id != department_responsible.department_id:
             raise NotFoundException(detail="Council not found")
 
@@ -68,7 +70,7 @@ class GetVotingEmployeesHandler:
 class UpdateVotingEmployeesHandler:
     def __init__(
         self,
-        technical_council_repository: TechnicalCouncilRepository = Depends(),
+        technical_council_repository: CouncilRepository = Depends(),
         council_employees_repository: CouncilEmployeesRepository = Depends(),
         vote_repository: VoteRepository = Depends(),
         poll_repository: PollRepository = Depends(),
@@ -108,7 +110,9 @@ class UpdateVotingEmployeesHandler:
                 detail={"message": "wrong voters", "votersIds": list(crossing)}
             )
         # check existing of council
-        council = await self.technical_council_repository.find_with_dpt(council_id)
+        council = await self.technical_council_repository.find_with_department(
+            council_id
+        )
         if not council or council.department_id != department_responsible.department_id:
             raise NotFoundException(detail="Council not found")
         if council.status != CouncilStatusesEnum.PRE_VOTING:

@@ -1,5 +1,3 @@
-import datetime
-
 from fastapi import Depends
 
 from src.exceptions.exceptions.application import ApplicationException
@@ -20,17 +18,13 @@ from src.orm.repositories import (
     IdeaRepository,
     IdeaStatusRepository,
     PollRepository,
+    CouncilStatusRepository,
     PollStatusRepository,
 )
-from src.schemas.enum import IdeaStatusCodeEnum
-from src.schemas.enum.council_status import CouncilStatusEnum
-from src.schemas.enum.poll_status import PollStatusCodeEnum
+from src.schemas.enum import IdeaStatusCodeEnum, PollStatusCodeEnum
+from src.schemas.enum.council_status import CouncilStatusCodeEnum
 from src.schemas.requests.admin.convene_council import ConveneCouncilRequest
 from src.schemas.responses.auth import UserAuthResponse
-
-# from src.services.scheduler.tasks.responsible.acceptance.start_pre_voting import (
-#     start_pre_voting_task,
-# )
 
 
 class ConveneCouncilHandler:
@@ -45,6 +39,7 @@ class ConveneCouncilHandler:
         idea_repository: IdeaRepository = Depends(),
         idea_status_repository: IdeaStatusRepository = Depends(),
         poll_repository: PollRepository = Depends(),
+        council_status_repository: CouncilStatusRepository = Depends(),
         poll_status_repository: PollStatusRepository = Depends(),
     ):
         self.council_repository = council_repository
@@ -56,6 +51,7 @@ class ConveneCouncilHandler:
         self.idea_repository = idea_repository
         self.idea_status_repository = idea_status_repository
         self.poll_repository = poll_repository
+        self.council_status_repository = council_status_repository
         self.poll_status_repository = poll_status_repository
 
     async def handle(
@@ -69,7 +65,7 @@ class ConveneCouncilHandler:
         if not department_admin:
             raise ApplicationException(detail="user is not department_admin")
 
-        voters = self.user_repository.get_users_by_ids_and_department_id(
+        voters = await self.user_repository.get_users_by_ids_and_department_id(
             convene_council_request.voting_users_ids, department_admin.department_id
         )
         if len(voters) != len(convene_council_request.voting_users_ids):
@@ -100,10 +96,17 @@ class ConveneCouncilHandler:
         )
         if not approved_ideas:
             raise NotFoundException(detail="no approved ideas")
-        poll_opened_status = await self.poll_status_repository.find_by_code(
-            PollStatusCodeEnum.OPENED
+
+        council_status_created = await self.council_status_repository.find_by_code(
+            CouncilStatusCodeEnum.CREATED
         )
-        if not poll_opened_status:
+        if not council_status_created:
+            raise ApplicationException()
+
+        poll_status_blocked = await self.poll_status_repository.find_by_code(
+            PollStatusCodeEnum.BLOCKED
+        )
+        if not poll_status_blocked:
             raise ApplicationException()
 
         # create council
@@ -112,7 +115,7 @@ class ConveneCouncilHandler:
                 department_id=department_admin.department_id,
                 chairman_id=convene_council_request.chairman_id,
                 planned_council_start=convene_council_request.planned_council_start,
-                council_status=CouncilStatusEnum.CREATED,
+                council_status_id=council_status_created.id,
             )
         )
 
@@ -133,24 +136,8 @@ class ConveneCouncilHandler:
                 PollModel(
                     idea_id=idea.id,
                     council_id=created_council.id,
-                    poll_status_id=poll_opened_status.id
-
+                    poll_status_id=poll_status_blocked.id,
                 )
                 for idea in approved_ideas
             ]
         )
-
-        # # check pre-voting
-        # if (
-        #     created_council.planned_council_start - datetime.timedelta(days=2)
-        #     <= datetime.datetime.utcnow()
-        # ):
-        #     # if it already must be opened
-        #     await start_pre_voting_task(created_council.id)
-        # elif (
-        #     created_council.planned_council_start - datetime.timedelta(days=2)
-        # ).date() == datetime.datetime.utcnow().date():
-        #     # or if it must be opened today
-        #     start_pre_voting_task.at(created_council.planned_council_start).do(
-        #         created_council.id
-        #     )

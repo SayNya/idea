@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from src.exceptions.exceptions.application import ApplicationException
-from src.orm.repositories import DepartmentAdminsRepository, TechnicalCouncilRepository
+from src.orm.repositories import DepartmentAdminsRepository, CouncilRepository
 from src.orm.schemas.common.query.paginator.base import LimitOffsetPaginator
 from src.orm.schemas.query.responsible.council.acceptance.history import (
     ResponsibleCouncilsHistoryParam,
@@ -17,7 +17,7 @@ from src.services.utils.councils import sort_councils_results
 class CouncilsHistoryHandler:
     def __init__(
         self,
-        council_repository: TechnicalCouncilRepository = Depends(),
+        council_repository: CouncilRepository = Depends(),
         department_admins_repository: DepartmentAdminsRepository = Depends(),
     ):
         self.council_repository = council_repository
