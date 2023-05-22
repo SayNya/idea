@@ -97,12 +97,12 @@ class ConveneCouncilHandler:
         if not approved_ideas:
             raise NotFoundException(detail="no approved ideas")
 
-        council_status_created = await self.council_status_repository.find_by_code(
-            CouncilStatusCodeEnum.CREATED
+        council_status_created = await self.council_status_repository.find_by_codes(
+            [CouncilStatusCodeEnum.CREATED]
         )
         if not council_status_created:
             raise ApplicationException()
-
+        council_status_created = council_status_created[0]
         poll_status_blocked = await self.poll_status_repository.find_by_code(
             PollStatusCodeEnum.BLOCKED
         )

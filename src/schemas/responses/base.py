@@ -38,9 +38,46 @@ class BaseIdeaRoleResponse(BaseResponse):
     code: str
 
 
+class BaseIdeaResponse(BaseResponse):
+    id: int
+    title: str
+    created_at: datetime
+
+
 class BaseUserResponse(BaseResponse):
     id: int
     username: str
     last_name: str | None
     first_name: str | None
     middle_name: str | None
+
+
+class BaseCouncilStatusResponse(BaseResponse):
+    id: int
+    title: str
+    code: str
+
+
+class BaseVoteResponse(BaseResponse):
+    user_id: int
+    choice: bool | None
+
+
+class BasePollStatusResponse(BaseResponse):
+    id: int
+    title: str
+    code: str
+
+
+class BasePollResponse(BaseResponse):
+    poll_status: BasePollStatusResponse
+    idea: BaseIdeaResponse
+    votes: list[BaseVoteResponse] | None
+
+
+class BaseCouncilResponse(BaseResponse):
+    id: int
+    council_status: BaseCouncilStatusResponse
+    planned_council_start: datetime
+    council_start: datetime | None = None
+    council_end: datetime | None = None

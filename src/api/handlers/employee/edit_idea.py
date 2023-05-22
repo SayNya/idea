@@ -92,7 +92,7 @@ class EditIdeaHandler:
             raise ApplicationException(detail="can't find role idea-co-author")
         current_co_authors = await self.employee_idea_repository.find_users_for_idea(
             idea.id,
-            co_author_role.id,
+            [IdeaRoleCodeEnum.IDEA_COAUTHOR],
         )
         current_co_authors_ids = {
             current_co_authors.employee_id for current_co_authors in current_co_authors

@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import product
 from typing import Optional
 
 from fastapi import Depends
@@ -6,12 +7,14 @@ from fastapi import Depends
 from src.exceptions.exceptions.application import ApplicationException
 from src.exceptions.exceptions.bad_request import BadRequestException
 from src.exceptions.exceptions.not_found import NotFoundException
+from src.orm.models import VoteModel
 from src.orm.repositories import (
     DepartmentAdminRepository,
     PollRepository,
     CouncilRepository,
     CouncilStatusRepository,
     PollStatusRepository,
+    VoteRepository,
 )
 from src.schemas.enum import PollStatusCodeEnum
 
@@ -27,6 +30,7 @@ class StartOnlineVotingHandler:
         department_admin_repository: DepartmentAdminRepository = Depends(),
         council_status_repository: CouncilStatusRepository = Depends(),
         poll_status_repository: PollStatusRepository = Depends(),
+        vote_repository: VoteRepository = Depends(),
         *,
         check_user_info: bool = True,
     ):
@@ -35,6 +39,7 @@ class StartOnlineVotingHandler:
         self.department_admin_repository = department_admin_repository
         self.council_status_repository = council_status_repository
         self.poll_status_repository = poll_status_repository
+        self.vote_repository = vote_repository
         self.check_user_info = check_user_info
 
     async def handle(
@@ -65,13 +70,13 @@ class StartOnlineVotingHandler:
                 detail="Cant start online voting for council with current status"
             )
         council_online_voting_status = (
-            await self.council_status_repository.find_by_code(
-                CouncilStatusCodeEnum.ONLINE_VOTING
+            await self.council_status_repository.find_by_codes(
+                [CouncilStatusCodeEnum.ONLINE_VOTING]
             )
         )
         if not council_online_voting_status:
             raise ApplicationException()
-
+        council_online_voting_status = council_online_voting_status[0]
         await self.council_repository.update(
             council.id,
             {
@@ -80,6 +85,19 @@ class StartOnlineVotingHandler:
             },
         )
         polls = await self.poll_repository.find_by_council_id(council.id)
+        print(polls)
+        print(polls)
+        poll_active_status = await self.poll_status_repository.find_by_code(
+            PollStatusCodeEnum.OPENED
+        )
+        if not poll_active_status:
+            raise ApplicationException()
         await self.poll_repository.bulk_update(
-            [poll.id for poll in polls], status=PollStatusCodeEnum.BLOCKED
+            [poll.id for poll in polls], poll_status_id=poll_active_status.id
+        )
+        await self.vote_repository.bulk_save(
+            [
+                VoteModel(user_id=user.id, poll_id=poll.id, choice=None)
+                for user, poll in product(council.users, council.polls)
+            ]
         )

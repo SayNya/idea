@@ -1,6 +1,7 @@
 from typing import Sequence
 
 from sqlalchemy import select, and_
+from sqlalchemy.orm import selectinload
 
 from src.orm.async_database import db_session
 from src.orm.models import PollModel
@@ -25,3 +26,13 @@ class PollRepository(BaseRepository):
             for poll in polls:
                 setattr(poll, column, value)
         await session.flush(polls)
+
+    async def find_with_status(self, poll_id: int) -> PollModel:
+        session = db_session.get()
+        query = (
+            select(PollModel)
+            .options(selectinload(PollModel.poll_status))
+            .filter(and_(PollModel.id == poll_id))
+        )
+        result = await session.execute(query)
+        return result.scalars().first()

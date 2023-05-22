@@ -1,15 +1,16 @@
 from sqlalchemy import select, and_, delete
 
 from src.orm.async_database import db_session
-from src.orm.models import UserIdeaModel
+from src.orm.models import UserIdeaModel, IdeaRoleModel
 from src.orm.repositories.base import BaseRepository
+from src.schemas.enum import IdeaRoleCodeEnum
 
 
 class UserIdeaRepository(BaseRepository):
     Model = UserIdeaModel
 
     async def find_users_for_idea(
-        self, idea_id: int, role_id: int | None = None
+        self, idea_id: int, role_codes: list[IdeaRoleCodeEnum] | None = None
     ) -> list[UserIdeaModel]:
         session = db_session.get()
         query = select(UserIdeaModel).filter(
@@ -17,10 +18,11 @@ class UserIdeaRepository(BaseRepository):
                 UserIdeaModel.idea_id == idea_id,
             )
         )
-        if role_id:
+        if role_codes:
             query = query.filter(
                 and_(
-                    UserIdeaModel.idea_role_id == role_id,
+                    UserIdeaModel.idea_role_id == IdeaRoleModel.id,
+                    IdeaRoleModel.code.in_(role_codes),
                 )
             )
         result = await session.execute(query)

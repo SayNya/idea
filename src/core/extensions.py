@@ -15,14 +15,14 @@ def include_extensions(app: FastAPI):
     include_cors_middleware(app)
     include_exceptions_handlers(app)
 
-    @app.on_event("startup")
-    async def startup_event():
-        scheduler.start()
-        plan_councils_starts.at("03:00").do()
-        remove_role_from_inactive_department.at("04:00").do()
-        scheduler.do_task(plan_councils_starts)
-
-    @app.on_event("shutdown")
-    def shutdown_event():
-        scheduler.stop()
-        scheduler.clear()
+    # @app.on_event("startup")
+    # async def startup_event():
+    #     scheduler.start()
+    #     plan_councils_starts.at("03:00").do()
+    #     remove_role_from_inactive_department.at("04:00").do()
+    #     scheduler.do_task(plan_councils_starts)
+    #
+    # @app.on_event("shutdown")
+    # def shutdown_event():
+    #     scheduler.stop()
+    #     scheduler.clear()

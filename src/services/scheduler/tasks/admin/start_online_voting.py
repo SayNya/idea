@@ -6,6 +6,7 @@ from src.orm.repositories import (
     CouncilRepository,
     CouncilStatusRepository,
     PollStatusRepository,
+    VoteRepository,
 )
 from src.services.scheduler import scheduler
 
@@ -19,6 +20,7 @@ async def start_online_voting_task(council_id: int) -> None:
         DepartmentAdminRepository(),
         CouncilStatusRepository(),
         PollStatusRepository(),
+        VoteRepository(),
         check_user_info=False,
     )
     await handler.handle(council_id)

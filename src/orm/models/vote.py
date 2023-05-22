@@ -9,7 +9,7 @@ class VoteModel(Base):
 
     poll_id = Column(Integer, ForeignKey("polls.id"), primary_key=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, nullable=False)
-    choice = Column(Boolean, nullable=False)
+    choice = Column(Boolean, nullable=True)
 
     poll = relationship("PollModel", back_populates="votes")  # poll_id
     user = relationship("UserModel")  # user

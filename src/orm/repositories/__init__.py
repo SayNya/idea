@@ -16,3 +16,4 @@ from .user_idea import UserIdeaRepository
 from .user_system_role import UserSystemRoleRepository
 from .council_status import CouncilStatusRepository
 from .poll_status import PollStatusRepository
+from .vote import VoteRepository
