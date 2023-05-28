@@ -4,6 +4,7 @@ from src.api.handlers.admin.council import (
     ConveneCouncilHandler,
     StartOnlineVotingHandler,
 )
+from src.api.handlers.admin.council.end_council import AdminEndCouncilHandler
 from src.api.middlewares.role_checker import PermissionChecker
 from src.api.middlewares.session import session
 from src.schemas.enum.system_role import SystemRoleCodeEnum
@@ -35,44 +36,8 @@ async def convene_council_by_admin(
 # ):
 #     return await councils_history_handler.handle(user_info, councils_history_param)
 #
-#
-# @router.get("/{council_id}/polls/{poll_number}")
-# @session()
-# async def poll_details_by_responsible(
-#     council_id: int,
-#     poll_number: int,
-#     poll_details_handler: PollDetailsHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     return await poll_details_handler.handle(council_id, poll_number, user_info)
-#
-#
-# @router.post("/{council_id}/polls/{poll_number}/end")
-# @session(commit=True)
-# async def end_poll_by_responsible(
-#     council_id: int,
-#     poll_number: int,
-#     end_poll_handler: ResponsibleEndPollHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     await end_poll_handler.handle(council_id, poll_number, user_info)
-#     return {}
-#
-#
-# @router.post("/{council_id}/polls/{poll_number}/close")
-# @session(commit=True)
-# async def close_poll(
-#     council_id: int,
-#     poll_number: int,
-#     change_status_request: ResponsibleChangeStatusRequest,
-#     close_poll_handler: ClosePollHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     return await close_poll_handler.handle(
-#         council_id, poll_number, change_status_request, user_info
-#     )
-#
-#
+
+
 # @router.get("/{council_id}")
 # @session()
 # async def get_council_details_by_responsible(
@@ -98,13 +63,23 @@ async def convene_council_by_admin(
 #
 @router.post("/{council_id}/start-online-voting")
 @session(commit=True)
-async def start_online_voting_by_responsible(
+async def start_online_voting_by_admin(
     council_id: int,
     start_online_voting_handler: StartOnlineVotingHandler = Depends(),
     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
 ):
     await start_online_voting_handler.handle(council_id, user_info)
     return {}
+
+
+@router.post("/{council_id}/end")
+@session(commit=True)
+async def end_council_by_admin(
+    council_id: int,
+    end_council_handler: AdminEndCouncilHandler = Depends(),
+    user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
+):
+    return await end_council_handler.handle(council_id, user_info)
 
 
 # @router.get("/{council_id}/voting-employees")
@@ -127,16 +102,6 @@ async def start_online_voting_by_responsible(
 # ):
 #     await update_voting_employees_handler.handle(council_id, request_schema, user_info)
 #     return {}
-#
-#
-# @router.post("/{council_id}/end")
-# @session(commit=True)
-# async def end_council_by_responsible(
-#     council_id: int,
-#     end_council_handler: ResponsibleEndCouncilHandler = Depends(),
-#     user_info: UserAuthResponse = Depends(PermissionChecker(SystemRoleCodeEnum.ADMIN)),
-# ):
-#     return await end_council_handler.handle(council_id, user_info)
 #
 #
 # @router.get("/{council_id}/polls/{poll_number}/votes/count")

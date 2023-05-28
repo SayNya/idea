@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 from src.orm.async_database import db_session
 from src.orm.models import CouncilStatusModel
@@ -11,10 +11,8 @@ from src.schemas.enum.council_status import CouncilStatusCodeEnum
 class CouncilStatusRepository(BaseRepository):
     Model = CouncilStatusModel
 
-    async def find_by_codes(
-        self, codes: list[CouncilStatusCodeEnum]
-    ) -> Sequence[CouncilStatusModel]:
+    async def find_by_code(self, code: CouncilStatusCodeEnum) -> CouncilStatusModel:
         session = db_session.get()
-        query = select(CouncilStatusModel).filter(CouncilStatusModel.code.in_(codes))
+        query = select(CouncilStatusModel).filter(and_(CouncilStatusModel.code == code))
         result = await session.execute(query)
-        return result.scalars().all()
+        return result.scalars().first()

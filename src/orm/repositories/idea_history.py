@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
@@ -23,3 +25,14 @@ class IdeaHistoryRepository(BaseRepository):
         )
         result = await session.execute(query)
         return result.scalars().first()
+
+    async def find_current_with_idea_ids(self, idea_ids: list[int]) -> Sequence[Model]:
+        session = db_session.get()
+        query = select(IdeaHistoryModel).filter(
+            and_(
+                IdeaHistoryModel.idea_id.in_(idea_ids),
+                IdeaHistoryModel.is_current_status,
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().all()

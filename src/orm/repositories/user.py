@@ -25,6 +25,12 @@ class UserRepository(BaseRepository):
         result = await session.execute(query)
         return result.scalars().first()
 
+    async def find_by_department(self, department_id: id) -> Sequence[UserModel]:
+        session = db_session.get()
+        query = select(UserModel).filter(or_(UserModel.department_id == department_id))
+        result = await session.execute(query)
+        return result.scalars().all()
+
     async def get_user_by_token(self, token: str) -> Model:
         session = db_session.get()
         query = (

@@ -7,7 +7,4 @@ class IdeaStatusCodeEnum(str, Enum):
     DECLINED = "declined"
     ACCEPTED = "accepted"
 
-    CANCELED = "canceled"
     REALISATION = "realisation"
-
-    COMPLETED = "completed"

@@ -70,13 +70,12 @@ class StartOnlineVotingHandler:
                 detail="Cant start online voting for council with current status"
             )
         council_online_voting_status = (
-            await self.council_status_repository.find_by_codes(
-                [CouncilStatusCodeEnum.ONLINE_VOTING]
+            await self.council_status_repository.find_by_code(
+                CouncilStatusCodeEnum.ONLINE_VOTING
             )
         )
         if not council_online_voting_status:
             raise ApplicationException()
-        council_online_voting_status = council_online_voting_status[0]
         await self.council_repository.update(
             council.id,
             {

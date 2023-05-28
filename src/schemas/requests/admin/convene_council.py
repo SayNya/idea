@@ -3,7 +3,6 @@ from datetime import datetime
 from pydantic.class_validators import validator
 from pydantic.types import PositiveInt, conlist
 
-from src.orm.types import UTCDatetime
 from src.schemas.base import BaseRequest
 
 

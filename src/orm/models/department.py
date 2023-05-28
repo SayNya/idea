@@ -8,7 +8,6 @@ class DepartmentModel(BaseIDModel):
     __tablename__ = "departments"
 
     name = Column(String(255))
-    short_name = Column(String(255))
     is_active = Column(Boolean, default=True)
 
     users = relationship("UserModel", back_populates="department")

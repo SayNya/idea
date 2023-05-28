@@ -10,8 +10,6 @@ from src.orm.models import (
 )
 from src.orm.repositories import (
     DepartmentAdminRepository,
-    DepartmentRepository,
-    SystemRoleRepository,
     CouncilRepository,
     UserRepository,
     CouncilUserRepository,
@@ -31,9 +29,7 @@ class ConveneCouncilHandler:
     def __init__(
         self,
         council_repository: CouncilRepository = Depends(),
-        department_repository: DepartmentRepository = Depends(),
         department_admin_repository: DepartmentAdminRepository = Depends(),
-        system_role_repository: SystemRoleRepository = Depends(),
         user_repository: UserRepository = Depends(),
         council_user_repository: CouncilUserRepository = Depends(),
         idea_repository: IdeaRepository = Depends(),
@@ -43,9 +39,7 @@ class ConveneCouncilHandler:
         poll_status_repository: PollStatusRepository = Depends(),
     ):
         self.council_repository = council_repository
-        self.department_repository = department_repository
         self.department_admin_repository = department_admin_repository
-        self.system_role_repository = system_role_repository
         self.user_repository = user_repository
         self.council_user_repository = council_user_repository
         self.idea_repository = idea_repository
@@ -83,26 +77,25 @@ class ConveneCouncilHandler:
             )
         )
         final_voters = set(voters) | set(default_voters)
-        accepted_status = await self.idea_status_repository.find_by_code(
-            IdeaStatusCodeEnum.ACCEPTED
+        proposed_status = await self.idea_status_repository.find_by_code(
+            IdeaStatusCodeEnum.PROPOSED
         )
-        if not accepted_status:
+        if not proposed_status:
             raise ApplicationException()
 
-        approved_ideas = (
-            await self.idea_repository.find_accepted_ideas_by_status_and_department(
-                accepted_status.id, department_admin.department_id
+        proposed_ideas = (
+            await self.idea_repository.find_proposed_ideas_by_status_and_department(
+                proposed_status.id, department_admin.department_id
             )
         )
-        if not approved_ideas:
-            raise NotFoundException(detail="no approved ideas")
+        if not proposed_ideas:
+            raise NotFoundException(detail="no proposed ideas")
 
-        council_status_created = await self.council_status_repository.find_by_codes(
-            [CouncilStatusCodeEnum.CREATED]
+        council_status_created = await self.council_status_repository.find_by_code(
+            CouncilStatusCodeEnum.CREATED
         )
         if not council_status_created:
             raise ApplicationException()
-        council_status_created = council_status_created[0]
         poll_status_blocked = await self.poll_status_repository.find_by_code(
             PollStatusCodeEnum.BLOCKED
         )
@@ -138,6 +131,6 @@ class ConveneCouncilHandler:
                     council_id=created_council.id,
                     poll_status_id=poll_status_blocked.id,
                 )
-                for idea in approved_ideas
+                for idea in proposed_ideas
             ]
         )

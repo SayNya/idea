@@ -1,11 +1,18 @@
 from typing import Sequence
 
 from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 
 from src.orm.async_database import db_session
-from src.orm.models import PollModel
+from src.orm.models import (
+    PollModel,
+    IdeaModel,
+    IdeaHistoryModel,
+    PollStatusModel,
+    VoteModel,
+)
 from src.orm.repositories.base import BaseRepository
+from src.schemas.enum import PollStatusCodeEnum
 
 
 class PollRepository(BaseRepository):
@@ -36,3 +43,25 @@ class PollRepository(BaseRepository):
         )
         result = await session.execute(query)
         return result.scalars().first()
+
+    async def find_by_council_id_and_statuses(
+        self, council_id: int, statuses: list[PollStatusCodeEnum]
+    ) -> Sequence[PollModel]:
+        session = db_session.get()
+        query = (
+            select(PollModel)
+            .options(
+                selectinload(PollModel.votes),
+                with_loader_criteria(VoteModel, VoteModel.choice.is_not(None)),
+            )
+            .filter(
+                and_(
+                    PollModel.council_id == council_id,
+                    PollModel.poll_status_id == PollStatusModel.id,
+                    PollStatusModel.code.in_(statuses),
+                )
+            )
+            .order_by(PollModel.id)
+        )
+        result = await session.execute(query)
+        return result.scalars().all()

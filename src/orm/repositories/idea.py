@@ -57,13 +57,45 @@ class IdeaRepository(BaseRepository):
         result = await session.execute(query)
         return result.scalars().all()
 
-    async def find_for_employee(self, idea_id: int, employee_id: int):
+    async def find_by_idea_id(
+        self, idea_id: int
+    ) -> Sequence[IdeaModel]:
+        session = db_session.get()
+        query = (
+            select(IdeaModel)
+            .options(
+                selectinload(IdeaModel.users).options(
+                    selectinload(UserModel.idea_roles),
+                ),
+            )
+            .options(
+                selectinload(IdeaModel.histories).selectinload(
+                    IdeaHistoryModel.idea_status
+                ),
+            )
+            .options(
+                selectinload(IdeaModel.categories),
+            )
+            .options(
+                selectinload(IdeaModel.department),
+            )
+            .filter(
+                and_(
+                    IdeaModel.id == idea_id
+                )
+            )
+        )
+
+        result = await session.execute(query)
+        return result.scalars().first()
+
+    async def find_for_employee(self, idea_id: int, employee_id: int) -> IdeaModel:
         session = db_session.get()
         query = (
             select(IdeaModel)
             .options(
                 selectinload(IdeaModel.histories).options(
-                    selectinload(IdeaHistoryModel.status),
+                    selectinload(IdeaHistoryModel.idea_status),
                 ),
                 with_loader_criteria(
                     IdeaHistoryModel, IdeaHistoryModel.is_current_status.is_(True)
@@ -83,7 +115,28 @@ class IdeaRepository(BaseRepository):
         result = await session.execute(query)
         return result.scalars().first()
 
-    async def find_accepted_ideas_by_status_and_department(
+    async def find_with_history(self, idea_id: int) -> IdeaModel:
+        session = db_session.get()
+        query = (
+            select(IdeaModel)
+            .options(
+                selectinload(IdeaModel.histories).options(
+                    selectinload(IdeaHistoryModel.idea_status),
+                ),
+                with_loader_criteria(
+                    IdeaHistoryModel, IdeaHistoryModel.is_current_status.is_(True)
+                ),
+            )
+            .filter(
+                and_(
+                    IdeaModel.id == idea_id,
+                )
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().first()
+
+    async def find_proposed_ideas_by_status_and_department(
         self, status_id: int, department_id: int
     ) -> Sequence[IdeaModel]:
         session = db_session.get()
@@ -93,6 +146,18 @@ class IdeaRepository(BaseRepository):
                 IdeaModel.id == IdeaHistoryModel.idea_id,
                 IdeaHistoryModel.idea_status_id == status_id,
                 IdeaHistoryModel.is_current_status,
+            )
+        )
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    async def find_by_department(
+        self, department_id: int
+    ) -> Sequence[IdeaModel]:
+        session = db_session.get()
+        query = select(IdeaModel).filter(
+            and_(
+                IdeaModel.department_id == department_id,
             )
         )
         result = await session.execute(query)

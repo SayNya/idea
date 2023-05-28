@@ -7,6 +7,7 @@ from .idea import IdeaRepository
 from .idea_category import IdeaCategoryRepository
 from .idea_history import IdeaHistoryRepository
 from .idea_status import IdeaStatusRepository
+from .idea_role import IdeaRoleRepository
 from .poll import PollRepository
 from .status import IdeaStatusRepository
 from .system_role import SystemRoleRepository

@@ -20,7 +20,7 @@ class BaseDepartmentResponse(BaseResponse):
     name: str
 
 
-class BaseStatusResponse(BaseResponse):
+class BaseIdeaStatusResponse(BaseResponse):
     id: int
     code: str
     title: str
@@ -28,7 +28,7 @@ class BaseStatusResponse(BaseResponse):
 
 class BaseIdeaHistoryResponse(BaseResponse):
     created_at: datetime
-    status: BaseStatusResponse
+    idea_status: BaseIdeaStatusResponse
     is_current_status: bool
 
 

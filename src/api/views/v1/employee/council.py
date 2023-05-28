@@ -39,18 +39,6 @@ async def get_council_details(
     return await council_details_handler.handle(council_id, user_info)
 
 
-@router.get("/{council_id}")
-@session()
-async def get_council_details(
-    council_id: int,
-    council_details_handler: CouncilDetailsHandler = Depends(),
-    user_info: UserAuthResponse = Depends(
-        PermissionChecker(SystemRoleCodeEnum.EMPLOYEE)
-    ),
-):
-    return await council_details_handler.handle(council_id, user_info)
-
-
 @router.patch("/polls/{poll_id}/vote")
 @session(commit=True)
 async def vote_by_employee(
