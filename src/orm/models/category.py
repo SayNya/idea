@@ -7,4 +7,4 @@ class CategoryModel(BaseIDModel):
     __tablename__ = "categories"
 
     name = Column(String(255))
-    is_active = Column(Boolean)
+    is_active = Column(Boolean, default=True)

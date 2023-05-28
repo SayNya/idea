@@ -30,7 +30,7 @@ class AuthorizationHandler:
             raise BadRequestException(detail="Incorrect username or password")
 
         if not validate_password(
-            password=form_data.password, hashed_password=user.password
+            password=form_data.password, hashed_password=user.password, salt=user.salt
         ):
             raise BadRequestException(detail="Incorrect username or password")
 
@@ -56,7 +56,7 @@ class RegistrationHandler:
         salt = get_random_string()
         hashed_password = hash_password(user_create.password, salt)
         user = UserModel(
-            username=user_create.username, password=f"{salt}${hashed_password}"
+            username=user_create.username, password=hashed_password, salt=salt
         )
         user = await self.user_repository.create(user)
         user = await self.user_repository.find_by_username(user.username)
